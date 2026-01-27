@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
-import 'dart:developer';
 
 /// Detect TabBar Status, isOnTap = is to check TabBar is on Tap or not, isOnTapIndex = is on Tap Index
 /// 增廁 TabBar 的狀態，isOnTap 是用來判斷是否是被點擊的狀態，isOnTapIndex 是用來儲存 TapBar 的 Index 的。
@@ -208,8 +207,6 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   Widget build(BuildContext context) {
     return SizedBox(
       key: listViewKey,
-      // NotificationListener 是一個由下往上傳遞通知，true 阻止通知、false 傳遞通知，確保指監聽滾動的通知
-      // ScrollNotification => https://www.jianshu.com/p/d80545454944
       child: Scrollbar(
         controller: _autoScrollController,
         thumbVisibility: widget._thumbVisibility,
@@ -247,7 +244,6 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
         List.generate(
           widget._listItemData.length,
           (index) {
-            // 建立 itemKeys 的 Key
             itemsKeys[index] = GlobalKey();
             return _buildItem(index);
           },
@@ -259,8 +255,6 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   Widget _buildItem(int index) {
     dynamic category = widget._listItemData[index];
     return SizedBox(
-      /// when announce GlobalKey，we can use RectGetter.getRectFromKey(key) to get Rect
-      /// 宣告 GlobalKey，之後可以 RectGetter.getRectFromKey(key) 的方式獲得 Rect
       key: itemsKeys[index],
       child: AutoScrollTag(
         key: ValueKey(index),
@@ -294,9 +288,6 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
 
   void _moveToTabOnScrolling() {
     List<int> visibleItems = getVisibleItemsIndex();
-
-    log(visibleItems.toString(), name: 'visibleItems');
-
     _tabController.animateTo(visibleItems[0]);
     VerticalScrollableTabBarStatus.resetToDefaults();
   }
