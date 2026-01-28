@@ -244,7 +244,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
         List.generate(
           widget._listItemData.length,
           (index) {
-            itemsKeys[index] = GlobalKey();
+            itemsKeys[index] ??= GlobalKey();
             return _buildItem(index);
           },
         ),
