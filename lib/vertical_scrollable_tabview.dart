@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 /// Detect TabBar Status, isOnTap = is to check TabBar is on Tap or not, isOnTapIndex = is on Tap Index
 /// 增廁 TabBar 的狀態，isOnTap 是用來判斷是否是被點擊的狀態，isOnTapIndex 是用來儲存 TapBar 的 Index 的。
@@ -95,7 +96,6 @@ class VerticalScrollableTabView extends StatefulWidget {
     ScrollbarOrientation? scrollbarOrientation,
 
     /// Copy CustomScrollView parameters
-    Axis scrollDirection = Axis.vertical,
     bool reverse = false,
     bool? primary,
     ScrollPhysics? physics,
@@ -128,7 +128,7 @@ class VerticalScrollableTabView extends StatefulWidget {
         _scrollbarOrientation = scrollbarOrientation,
 
         /// CustomScrollView
-        _scrollDirection = scrollDirection,
+        _scrollDirection = Axis.vertical,
         _reverse = reverse,
         _primary = primary,
         _physics = physics,
@@ -227,7 +227,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
           center: widget._center,
           anchor: widget._anchor,
           cacheExtent: widget._cacheExtent,
-          slivers: [...widget._slivers, _buildVerticalSliverList()],
+          slivers: [...widget._slivers, ..._items()],
           semanticChildCount: widget._semanticChildCount,
           dragStartBehavior: widget._dragStartBehavior,
           keyboardDismissBehavior: widget._keyboardDismissBehavior,
@@ -238,29 +238,29 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
     );
   }
 
-  Widget _buildVerticalSliverList() {
-    return SliverList(
-      delegate: SliverChildListDelegate(
-        List.generate(
-          widget._listItemData.length,
-          (index) {
-            itemsKeys[index] ??= GlobalKey();
-            return _buildItem(index);
-          },
-        ),
-      ),
+  List<Widget> _items() {
+    return List.generate(
+      widget._listItemData.length,
+      (index) {
+        itemsKeys[index] ??= GlobalKey();
+
+        return _anItem(index);
+      },
     );
   }
 
-  Widget _buildItem(int index) {
+  Widget _anItem(int index) {
     dynamic category = widget._listItemData[index];
-    return SizedBox(
-      key: itemsKeys[index],
-      child: AutoScrollTag(
-        key: ValueKey(index),
-        index: index,
-        controller: _autoScrollController,
-        child: widget._eachItemChild(category, index),
+
+    return AutoScrollTag(
+      index: index,
+      key: ValueKey(index),
+      controller: _autoScrollController,
+      builder: (_, __) => SliverMainAxisGroup(
+        key: itemsKeys[index],
+        slivers: [
+          widget._eachItemChild(category, index),
+        ],
       ),
     );
   }
@@ -301,7 +301,6 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
     List<int> items = [];
     if (rect == null) return items;
 
-    bool isHorizontalScroll = widget._scrollDirection == Axis.horizontal;
     itemsKeys.forEach((index, key) {
       Rect? itemRect = key.widgetRect();
 
@@ -312,21 +311,14 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
       // bottom meaning => The offset of the bottom edge of this widget from the y axis.
       // top meaning => The offset of the top edge of this widget from the y axis.
       //Change offset based on AxisOrientation [horizontal] [vertical]
-      switch (isHorizontalScroll) {
-        case true:
-          if (itemRect.left > rect.right) return;
-          if (itemRect.right < rect.left) return;
-          break;
-        case false:
-          if (itemRect.top > rect.bottom) return;
-          // 如果 item 下方的座標 比 listView 的上方的座標 的位置的小 代表不在畫面中。
-          if (itemRect.bottom <
-              rect.top +
-                  MediaQuery.of(context).viewPadding.top +
-                  widget._heightAboveChildren) {
-            return;
-          }
-          break;
+
+      if (itemRect.top > rect.bottom) return;
+      // 如果 item 下方的座標 比 listView 的上方的座標 的位置的小 代表不在畫面中。
+      if (itemRect.bottom <
+          rect.top +
+              MediaQuery.of(context).viewPadding.top +
+              widget._heightAboveChildren) {
+        return;
       }
 
       items.add(index);
@@ -345,12 +337,15 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
 
 extension WidgetRectFromKey on GlobalKey {
   Rect? widgetRect() {
-    return switch (currentContext?.findRenderObject()) {
-      RenderBox box => switch (box.localToGlobal(Offset.zero)) {
-          final offset =>
-            offset.dx.isNaN || offset.dy.isNaN ? null : offset & box.size,
-        },
-      _ => null,
+    final renderObject = currentContext?.findRenderObject();
+
+    final translation = renderObject?.getTransformTo(null).getTranslation();
+
+    return switch ((translation, renderObject?.paintBounds)) {
+      (null, _) => null,
+      (_, null) => null,
+      (Vector3 translation, Rect paintBounds) =>
+        paintBounds.shift(Offset(translation.x, translation.y)),
     };
   }
 }
