@@ -287,8 +287,12 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   }
 
   void _moveToTabOnScrolling() {
-    List<int> visibleItems = getVisibleItemsIndex();
+    final visibleItems = getVisibleItemsIndex();
+    
+    if (visibleItems.isEmpty) return;
+    
     _tabController.animateTo(visibleItems[0]);
+    
     VerticalScrollableTabBarStatus.resetToDefaults();
   }
 
