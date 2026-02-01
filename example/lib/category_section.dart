@@ -3,23 +3,15 @@ import 'package:flutter/material.dart';
 import 'example_data.dart';
 
 class CategorySection extends StatelessWidget {
-  const CategorySection({
-    Key? key,
-    required this.category,
-  }) : super(key: key);
+  const CategorySection({Key? key, required this.category}) : super(key: key);
 
   final Category category;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-      ),
-      margin: const EdgeInsets.only(
-        bottom: 16,
-        top: 16.0,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      margin: const EdgeInsets.only(bottom: 16, top: 16.0),
       color: Colors.cyanAccent.withOpacity(0.1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,19 +59,13 @@ class CategorySection extends StatelessWidget {
     return Row(
       children: [
         if (category.isHotSale) _buildSectionHoteSaleIcon(),
-        Text(
-          category.title,
-          style: _textTheme(context).headline6,
-        )
+        Text(category.title, style: _textTheme(context).headline6),
       ],
     );
   }
 
   Widget _sectionSubtitle(BuildContext context) {
-    return Text(
-      category.subtitle!,
-      style: _textTheme(context).subtitle2,
-    );
+    return Text(category.subtitle!, style: _textTheme(context).subtitle2);
   }
 
   Widget _buildFoodTile({
@@ -96,7 +82,9 @@ class CategorySection extends StatelessWidget {
             _buildFoodImage(food.imageUrl),
           ],
         ),
-        !isLastIndex ? const Divider(height: 16.0) : const SizedBox(height: 8.0)
+        !isLastIndex
+            ? const Divider(height: 16.0)
+            : const SizedBox(height: 8.0),
       ],
     );
   }
@@ -109,10 +97,7 @@ class CategorySection extends StatelessWidget {
     );
   }
 
-  Widget _buildFoodDetail({
-    required BuildContext context,
-    required Food food,
-  }) {
+  Widget _buildFoodDetail({required BuildContext context, required Food food}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -120,15 +105,12 @@ class CategorySection extends StatelessWidget {
         const SizedBox(height: 16),
         Row(
           children: [
-            Text(
-              "特價${food.price} ",
-              style: _textTheme(context).caption,
-            ),
+            Text("特價${food.price} ", style: _textTheme(context).caption),
             Text(
               food.comparePrice,
-              style: _textTheme(context)
-                  .caption
-                  ?.copyWith(decoration: TextDecoration.lineThrough),
+              style: _textTheme(
+                context,
+              ).caption?.copyWith(decoration: TextDecoration.lineThrough),
             ),
             const SizedBox(width: 8.0),
             if (food.isHotSale) _buildFoodHotSaleIcon(),
@@ -141,11 +123,7 @@ class CategorySection extends StatelessWidget {
   Widget _buildSectionHoteSaleIcon() {
     return Container(
       margin: const EdgeInsets.only(right: 4.0),
-      child: const Icon(
-        Icons.whatshot,
-        color: Colors.pink,
-        size: 20.0,
-      ),
+      child: const Icon(Icons.whatshot, color: Colors.pink, size: 20.0),
     );
   }
 

@@ -227,7 +227,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
           center: widget._center,
           anchor: widget._anchor,
           cacheExtent: widget._cacheExtent,
-          slivers: [...widget._slivers, ..._items()],
+          slivers: [...widget._slivers, _buildVerticalSliverList()],
           semanticChildCount: widget._semanticChildCount,
           dragStartBehavior: widget._dragStartBehavior,
           keyboardDismissBehavior: widget._keyboardDismissBehavior,
@@ -238,30 +238,28 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
     );
   }
 
-  List<Widget> _items() {
-    return List.generate(
-      widget._listItemData.length,
-      (index) {
-        itemsKeys[index] ??= GlobalKey();
-
-        return _anItem(index);
-      },
+  Widget _buildVerticalSliverList() {
+    return SliverList(
+      delegate: SliverChildListDelegate(
+        List.generate(
+          widget._listItemData.length,
+          (index) {
+            itemsKeys[index] = GlobalKey();
+            return _buildItem(index);
+          },
+        ),
+      ),
     );
   }
 
-  Widget _anItem(int index) {
+  Widget _buildItem(int index) {
     dynamic category = widget._listItemData[index];
 
     return AutoScrollTag(
       index: index,
       key: ValueKey(index),
       controller: _autoScrollController,
-      builder: (_, __) => SliverMainAxisGroup(
-        key: itemsKeys[index],
-        slivers: [
-          widget._eachItemChild(category, index),
-        ],
-      ),
+      child: widget._eachItemChild(category, index),
     );
   }
 
@@ -288,11 +286,11 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
 
   void _moveToTabOnScrolling() {
     final visibleItems = getVisibleItemsIndex();
-    
+
     if (visibleItems.isEmpty) return;
-    
+
     _tabController.animateTo(visibleItems[0]);
-    
+
     VerticalScrollableTabBarStatus.resetToDefaults();
   }
 
